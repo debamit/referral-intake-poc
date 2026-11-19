@@ -1,0 +1,15 @@
+# virtualenv
+.venv/
+.venv-ocr/
+
+# never commit real referral images — samples/ holds a PHI form
+samples/
+*.jpg
+*.jpeg
+
+# generated artifacts
+__pycache__/
+*.pyc
+redact/out/
+out/
+scratch/

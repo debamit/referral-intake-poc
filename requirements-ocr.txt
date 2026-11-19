@@ -1,0 +1,53 @@
+# Optional OCR dependency — label-anchored field discovery and scan-quality gating.
+#
+# NOT part of the default path. The app as it stands has no third-party
+# dependencies beyond the system Pillow; nothing here is imported until an OCR
+# code path is added.
+#
+# Install with uv into the project venv. Do NOT use the system interpreter:
+# this shell exports PYTHONPATH pointing at a python3.14 Hermes venv, which
+# leaks into a 3.12 interpreter, shadows Pillow with a 3.14 build, and makes
+# pip believe dependencies are already satisfied.
+#
+#   uv venv --python 3.12 .venv
+#   uv pip install --python .venv/bin/python -r requirements-ocr.txt
+#   uv pip compile requirements-ocr.txt -o requirements-ocr.lock.txt
+#
+# Always run project code through ./run.sh, which invokes the venv with -E -s
+# so PYTHON* environment variables are ignored. Never call .venv/bin/python
+# directly from this shell.
+#
+# Run the compiled lock file in CI, not this file, so transitive drift is caught.
+
+rapidocr==3.10.0
+onnxruntime==1.31.1
+
+# ---------------------------------------------------------------------------
+# Why these two, and what they drag in
+#
+# rapidocr 3.10.0   Apache-2.0 code AND model weights. PaddleOCR's PP-OCR
+#                   models converted to ONNX; no PaddlePaddle framework needed.
+#                   Wheel is ~27 MB and bundles the default models, so there is
+#                   no separate model download at runtime.
+#
+# onnxruntime 1.31.1  The inference engine. NOTE: rapidocr does not declare an
+#                   engine as a hard dependency — it supports several (onnxruntime,
+#                   openvino, paddle, torch) — so it must be pinned explicitly or
+#                   you get whichever engine happens to be importable.
+#
+# Transitive dependencies declared by rapidocr 3.10.0 (not hand-pinned here —
+# lock them with `pip freeze` after install, which is the reproducible set):
+#
+#   numpy<3.0.0,>=1.19.5        upper bound matters; numpy 3 breaks it
+#   opencv-python-headless>=4.5.1.48   headless variant, avoids libGL.so.1
+#   Pillow, PyYAML, Shapely!=2.0.4, pyclipper, omegaconf!=2.2.1,
+#   tqdm, requests, colorlog, six
+#
+# Python: rapidocr requires >=3.8,<4. onnxruntime 1.31.1 ships wheels for
+# CPython 3.11–3.14. The host interpreter is 3.12 — compatible.
+#
+# Licensing note: model weights are Apache-2.0 per RapidAI's MODEL_LICENSES.md,
+# derived from PaddleOCR. Record the model version alongside the code-set
+# version in the audit record — a model update changes recognition output the
+# same way an ICD update changes validity.
+# ---------------------------------------------------------------------------

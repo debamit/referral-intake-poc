@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lexicographic ordering — gated field decode</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#151a21; --line:#252c36; --ink:#e6e8eb; --mute:#8b939f;
+    --accent:#4f8cff; --ok:#2ecc71; --warn:#e8b13a; --bad:#e05555;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:820px;margin:0 auto;padding:40px 22px 80px}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.02em;font-weight:660}
+  .lede{color:var(--mute);font-size:15.5px;margin:0 0 34px}
+  h2{font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--mute);
+     margin:38px 0 12px;font-weight:650}
+  p{margin:0 0 14px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .rule{background:var(--panel);border-left:3px solid var(--accent);border-radius:0 9px 9px 0;
+        padding:14px 16px;margin:18px 0;font-size:15px}
+  .rule b{color:var(--accent)}
+
+  .flow{display:flex;flex-direction:column;gap:0;margin-top:8px}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px}
+  .step.hard{border-left:3px solid var(--accent)}
+  .step.soft{border-left:3px solid var(--line)}
+  .step.human{border-left:3px solid var(--mute)}
+  .tag{font:650 9.5px/1 ui-monospace,monospace;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+  .ttl{font-weight:620;margin:4px 0 3px}
+  .code{font:12px/1.45 ui-monospace,monospace;color:var(--ink);opacity:.85}
+  .why{color:var(--mute);font-size:12.5px;margin-top:4px}
+  .arrow{height:16px;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:10px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 4px}
+  th{text-align:left;color:var(--mute);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+     font-weight:650;padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:8px 10px;border-bottom:1px solid rgba(37,44,54,.6);vertical-align:top}
+  td.k{font-family:ui-monospace,monospace;font-size:12px;white-space:nowrap}
+  .acc{color:var(--accent)}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+
+  .callout{border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+           background:rgba(224,85,85,.05);margin:22px 0}
+  .callout h3{margin:0 0 6px;font-size:13px;color:var(--bad);letter-spacing:.02em}
+  footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);
+         color:var(--mute);font-size:12.5px}
+  a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Lexicographic ordering</h1>
+  <p class="lede">How a referral field is decoded when the value space can be constrained — and why the ordering matters more than the accuracy of any single step.</p>
+
+  <div class="rule">
+    <b>Hard constraints decide what is possible. Scoring only ranks what survives.</b>
+    The two are never added together. A confidence score may not promote a value that fails a
+    gate, however strongly the glyphs appear to match it.
+  </div>
+
+  <h2>The order</h2>
+  <div class="flow">
+
+    <div class="step hard">
+      <div class="tag">2 · hard set</div>
+      <div class="ttl">Build the admissible set</div>
+      <div class="code">A = leaves(code_set) ∩ indications(drug) ∩ grammar(form revision)</div>
+      <div class="why">This is the drug doing the work. An adalimumab referral can only carry a few hundred codes, not seventy-odd thousand. If <span class="mono">A</span> is empty, the map is incomplete — that is a data gap, not a document defect.</div>
+    </div>
+    <div class="arrow">▾</div>
+
+    <div class="step hard">
+      <div class="tag">4 · gate</div>
+      <div class="ttl">Filter, in order, with no scores</div>
+      <div class="code">(a) exists in code_set &nbsp;→&nbsp; (b) member of A</div>
+      <div class="why">Existence kills pseudo-codes that look plausible; membership kills real codes prescribed for the wrong disease. Both are deterministic and replayable.</div>
+    </div>
+    <div class="arrow">▾</div>
+
+    <div class="step soft">
+      <div class="tag">5 · rank</div>
+      <div class="ttl">Score only the survivors</div>
+      <div class="code">shape score → margin between the top two distinct survivors</div>
+      <div class="why">Confidence enters here and nowhere earlier. The margin is compared to calibrated thresholds; it is evidence, not probability.</div>
+    </div>
+    <div class="arrow">▾</div>
+
+    <div class="step">
+      <div class="tag">6 · decide</div>
+      <div class="ttl">One disposition, one reason code</div>
+      <div class="code">margin ≥ τ_high → accept · τ_low ≤ margin &lt; τ_high → human review</div>
+      <div class="why">The reason code is the audit trail. "Why was this classified as psoriasis" has a one-line answer, reproducible from the log.</div>
+    </div>
+  </div>
+
+  <h2>Reason codes</h2>
+  <table>
+    <thead><tr><th>code</th><th>meaning</th><th>disposition</th></tr></thead>
+    <tbody>
+      <tr><td class="k acc">MATCH_INDICATION</td><td>survivors exist and the margin is clear</td><td class="ok">accept</td></tr>
+      <tr><td class="k">AMBIGUOUS_SHAPE</td><td>survivors exist but the shapes are too close</td><td class="warn">human picks top 2</td></tr>
+      <tr><td class="k">CLINICAL_MISMATCH</td><td>a real code, but not an indication for this drug</td><td class="bad">callback</td></tr>
+      <tr><td class="k">NO_VALID_CODE</td><td>nothing parsed exists in the code set</td><td class="bad">callback</td></tr>
+      <tr><td class="k">CLINICAL_CHECK_UNAVAILABLE</td><td>A is empty — indication map gap</td><td class="bad">callback</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Which fields this applies to</h2>
+  <table>
+    <thead><tr><th>tier</th><th>fields</th><th>treatment</th></tr></thead>
+    <tbody>
+      <tr><td class="k">constrained</td><td>diagnosis, drug, strength, NPI, member ID, fax number</td><td>full treatment: build A, gate, rank, dispose</td></tr>
+      <tr><td class="k">validated</td><td>dates, quantities, ZIP, phone</td><td>hard gates only — no candidate set worth ranking</td></tr>
+      <tr><td class="k">judgment</td><td>allergies, signature legitimacy, free-text notes</td><td>gate for presence, then human — never scored</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <h3>Why not a single weighted score</h3>
+    <p style="margin:0">An early build of this scored candidacy as a <span class="mono">+2.5</span> bonus and shape as
+    <span class="mono">0.0–1.0</span>, then took the maximum. It reported a margin of <span class="mono">2.47</span> that was
+    almost entirely bonus, and it promoted a reading with a <em>worse</em> shape score because the bonus outweighed
+    the difference. A weighted sum cannot answer "why this one", because the answer is "two numbers were added."
+    Lexicographic ordering can: <em>it was the only reading that both exists and is indicated; among those, it had the best shape score.</em></p>
+  </div>
+
+  <h2>What makes it auditable</h2>
+  <p>Every decision logs its inputs and its versions: source hash, crop box, preprocessing parameters, the
+     split count chosen, each glyph's bounding box with its alternatives and scores, the
+     <span class="mono">code_set</span> fiscal-year version, the <span class="mono">indication_map</span>,
+     the <span class="mono">rule_set</span>, the thresholds, the surviving readings, the margin, the reason code,
+     and any human override with who and when.</p>
+  <p>Same inputs and same versions must replay to the identical output. That property — not accuracy — is what
+     separates this from adjusting a prompt and hoping. And when the code set updates on 1 October, historical
+     decisions replay against the version that made them, so an old answer does not silently change.</p>
+
+  <footer>
+    Demo: <a href="/">field decode proof of concept</a> · thresholds shown are calibration placeholders ·
+    the bundled code set is a sample, not the full FY ICD-10-CM file.
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "legacy_supply_request_v1",
+  "description": "Single-page legacy Accredo 'Prescription and Supply Request Form' (RA variant), photographed off a screen with perspective skew. Boxes derived from an ink-profile pass (flat-field corrected, ruling lines removed), then widened to absorb skew. Fractions of the page, so resolution-independent.",
+  "pages": 1,
+  "fill": [58, 58, 58],
+  "box_model": "fractional [x0,y0,x1,y1], origin top-left",
+  "method": "profile.py -> text bands; boxes padded +/-1.5% to tolerate perspective skew",
+  "regions": [
+    {"id": "patient_identifiers", "category": "patient", "page": 1, "box": [0.055, 0.335, 0.945, 0.392], "contains": "patient name, date of birth, phone, active address"}
+  ],
+  "deliberately_visible": [
+    "drug name, strength and SIG",
+    "diagnosis code and allergy entry (clinical, non-identifying)",
+    "height and weight values",
+    "dispense quantity and refill selection",
+    "form title, section headers, instructions"
+  ],
+  "known_tradeoffs": [
+    "the substitution election row is masked along with the prescriber identifiers, so that section cannot be assessed on the redacted copy",
+    "the form title is deliberately left visible"
+  ]
+}

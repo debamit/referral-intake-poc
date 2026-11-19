@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gated decode — lexicographic ordering</title>
+<style>
+  .wrap { width: 760px; color: var(--foreground); font-size: 13px; line-height: 1.45; }
+  h1 { font-size: 17px; margin: 0 0 4px; font-weight: 650; letter-spacing: -0.01em; }
+  .sub { color: var(--muted-foreground); margin: 0 0 14px; font-size: 12.5px; }
+  .legend { display: flex; gap: 14px; margin: 0 0 16px; flex-wrap: wrap; font-size: 11.5px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; color: var(--muted-foreground); }
+  .sw { width: 11px; height: 11px; border-radius: 3px; }
+  .sw.hard { background: var(--accent); }
+  .sw.soft { border: 1.5px dashed var(--border); }
+  .sw.human { background: var(--muted-foreground); opacity: .45; }
+
+  .flow { display: flex; flex-direction: column; gap: 0; }
+  .step { border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; background: var(--card); }
+  .step.hard { border-left: 3px solid var(--accent); }
+  .step.soft { border-left: 3px solid var(--border); border-style: dashed; border-left-style: solid; }
+  .step.human { border-left: 3px solid var(--muted-foreground); }
+  .step.decide { background: var(--card); border-left: 3px solid var(--accent); }
+
+  .tag { font: 600 9.5px/1 ui-monospace, monospace; letter-spacing: .09em; color: var(--muted-foreground); text-transform: uppercase; }
+  .ttl { font-weight: 600; margin: 3px 0 2px; font-size: 13px; }
+  .rule { font: 11.5px/1.4 ui-monospace, monospace; color: var(--foreground); opacity: .82; }
+  .note { color: var(--muted-foreground); font-size: 11px; margin-top: 3px; }
+  .note b { font-family: ui-monospace, monospace; font-weight: 600; opacity: .9; }
+
+  .arrow { height: 15px; display: flex; align-items: center; justify-content: center;
+           color: var(--muted-foreground); font-size: 10px; }
+  .branch { color: var(--muted-foreground); font-size: 11px; padding-left: 4px; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .outcomes { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .oh { font: 600 9.5px/1 ui-monospace, monospace; letter-spacing: .09em;
+        color: var(--muted-foreground); text-transform: uppercase; margin-bottom: 8px; }
+  .row { display: flex; align-items: baseline; gap: 10px; padding: 4px 0; font-size: 11.5px; }
+  .code { font: 600 10.5px/1 ui-monospace, monospace; min-width: 200px; color: var(--foreground); }
+  .code.d { color: var(--accent); }
+  .desc { color: var(--muted-foreground); }
+
+  .vinputs { margin-top: 14px; padding: 9px 12px; border: 1px dashed var(--border);
+             border-radius: 9px; color: var(--muted-foreground); font-size: 11px; }
+  .vinputs b { color: var(--foreground); font-weight: 600; }
+  .mono { font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Gated decode — lexicographic ordering</h1>
+  <p class="sub">Hard constraints decide what is <em>possible</em>. Scoring only ranks what <em>survives</em>. Nothing is added together.</p>
+
+  <div class="legend">
+    <span class="chip"><span class="sw hard"></span>hard gate — deterministic, no score</span>
+    <span class="chip"><span class="sw soft"></span>soft evidence — only ranks survivors</span>
+    <span class="chip"><span class="sw human"></span>human decision</span>
+  </div>
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="tag">0 · intake</div>
+      <div class="ttl">Form version, page completeness</div>
+      <div class="rule">pages received = pages expected for this revision</div>
+      <div class="note">A 4-page legacy fax is not a truncation. Version first, then everything else.</div>
+    </div>
+
+    <div class="arrow">▾</div>
+
+    <div class="step">
+      <div class="tag">1 · geometry</div>
+      <div class="ttl">Normalize the page</div>
+      <div class="rule">deskew → perspective warp → crop to form frame → canonical canvas</div>
+      <div class="note">Template boxes become stable, so fields are found by position — no model reads the page to locate them.</div>
+    </div>
+
+    <div class="arrow">▾</div>
+
+    <div class="step hard">
+      <div class="tag">2 · hard set</div>
+      <div class="ttl">Build the admissible set <span class="mono" style="font-weight:400">A</span></div>
+      <div class="rule">A = leaves(code_set) ∩ indications(drug) ∩ grammar(form version)</div>
+      <div class="note">Empty <b>A</b> → <b>CLINICAL_CHECK_UNAVAILABLE</b>. Do not reject the document; the map is incomplete.</div>
+    </div>
+
+    <div class="arrow">▾</div>
+
+    <div class="step">
+      <div class="tag">3 · enumerate</div>
+      <div class="ttl">Generate candidate readings</div>
+      <div class="rule">segmentation choices × per-glyph alternatives (bounded)</div>
+      <div class="note">Includes the leading-letter class — a digit-only alphabet cannot reach a letter-first code.</div>
+    </div>
+
+    <div class="arrow">▾</div>
+
+    <div class="step hard">
+      <div class="tag">4 · gate</div>
+      <div class="ttl">Filter — order matters, no scores here</div>
+      <div class="rule">(a) exists in code_set &nbsp;→&nbsp; (b) ∈ A</div>
+      <div class="note">A confidence score may never promote a code that fails (a) or (b). This is the rule my first build broke.</div>
+    </div>
+
+    <div class="arrow">▾</div>
+
+    <div class="step soft">
+      <div class="tag">5 · rank</div>
+      <div class="ttl">Score only the survivors</div>
+      <div class="rule">shape score → margin between top two distinct readings</div>
+      <div class="note">Margin is compared to calibrated thresholds. It is evidence, not probability.</div>
+    </div>
+
+    <div class="arrow">▾</div>
+
+    <div class="step decide">
+      <div class="tag">6 · decide</div>
+      <div class="ttl">Map to exactly one disposition</div>
+      <div class="rule">margin ≥ τ_high → accept &nbsp;·&nbsp; τ_low ≤ margin &lt; τ_high → review</div>
+    </div>
+
+  </div>
+
+  <div class="outcomes">
+    <div class="oh">Reason codes — the audit trail is this line</div>
+    <div class="row"><span class="code d">MATCH_INDICATION</span><span class="desc">survivors exist, margin clear → accept</span></div>
+    <div class="row"><span class="code">AMBIGUOUS_SHAPE</span><span class="desc">survivors exist, margin below τ_low → human picks top 2</span></div>
+    <div class="row"><span class="code">CLINICAL_MISMATCH</span><span class="desc">real code, but not an indication for this drug → callback</span></div>
+    <div class="row"><span class="code">NO_VALID_CODE</span><span class="desc">nothing parsed exists in the code set → callback</span></div>
+    <div class="row"><span class="code">CLINICAL_CHECK_UNAVAILABLE</span><span class="desc">A empty — map gap, not a document defect</span></div>
+  </div>
+
+  <div class="vinputs">
+    <b>Logged with every decision:</b> source hash · crop box · preprocessing params · chosen split count ·
+    per-glyph bbox + alternatives + scores · <span class="mono">code_set</span> fiscal-year version ·
+    <span class="mono">indication_map</span> · <span class="mono">rule_set</span> · thresholds · margin · reason code · any human override.
+    Same inputs + same versions must replay to the identical output.
+  </div>
+
+</div>
+</body>
+</html>

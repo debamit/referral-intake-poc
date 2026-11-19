@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1",
+  "form_family": "accredo-prescription-enrollment",
+  "pages_expected": 2,
+  "page_markers": ["1 of 2", "2 of 2"],
+  "dispositions": ["D0_AUTO_CLEAR", "D1_AUTO_REPAIR", "D2_HUMAN_REVIEW", "D3_PRESCRIBER_CALLBACK", "D4_REJECT_REFAX"],
+  "ordinal": {"D4_REJECT_REFAX": 4, "D3_PRESCRIBER_CALLBACK": 3, "D2_HUMAN_REVIEW": 2, "D1_AUTO_REPAIR": 1, "D0_AUTO_CLEAR": 0},
+  "sections": [
+    {
+      "id": "1",
+      "title": "Patient Information",
+      "fields": [
+        {"id": "patient.first_name", "label": "Patient's first name", "required": "always", "validators": ["nonempty"], "on_missing": "D3_PRESCRIBER_CALLBACK", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.last_name", "label": "Last name", "required": "always", "validators": ["nonempty"], "on_missing": "D3_PRESCRIBER_CALLBACK", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.middle_initial", "label": "Middle initial", "required": "optional", "validators": ["nonempty"], "severity": "nonblocking"},
+        {"id": "patient.preferred_first_name", "label": "Preferred patient first name", "required": "optional", "validators": ["nonempty"], "severity": "nonblocking"},
+        {"id": "patient.preferred_last_name", "label": "Preferred patient last name", "required": "optional", "validators": ["nonempty"], "severity": "nonblocking"},
+        {"id": "patient.sex_at_birth", "label": "Sex at birth", "required": "always", "validators": ["one_of:Male,Female"], "on_missing": "D1_AUTO_REPAIR", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.gender_identity", "label": "Gender identity", "required": "optional", "severity": "nonblocking"},
+        {"id": "patient.pronouns", "label": "Pronouns", "required": "optional", "severity": "nonblocking"},
+        {"id": "patient.ssn_last4", "label": "Last 4 digits of SSN", "required": "optional", "validators": ["digits:4"], "severity": "nonblocking"},
+        {"id": "patient.dob", "label": "Date of birth", "required": "always", "validators": ["date_iso", "not_future"], "on_missing": "D3_PRESCRIBER_CALLBACK", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.address_street", "label": "Street address", "required": "always", "validators": ["nonempty"], "on_missing": "D1_AUTO_REPAIR", "severity": "blocking", "recover_from": ["insurance_card", "prescriber_letterhead"]},
+        {"id": "patient.address_apt", "label": "Apt #", "required": "optional", "severity": "nonblocking"},
+        {"id": "patient.address_city", "label": "City", "required": "always", "validators": ["nonempty"], "on_missing": "D1_AUTO_REPAIR", "severity": "blocking"},
+        {"id": "patient.address_state", "label": "State", "required": "always", "validators": ["state_us"], "on_missing": "D1_AUTO_REPAIR", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.address_zip", "label": "Zip", "required": "always", "validators": ["zip5"], "on_missing": "D1_AUTO_REPAIR", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.phone_home", "label": "Home phone", "required": "conditional", "condition": "at least one of phone_home, phone_cell, email must be present", "validators": ["phone_nanp"], "on_missing": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.phone_cell", "label": "Cell phone", "required": "conditional", "condition": "at least one contact channel", "validators": ["phone_nanp"], "on_missing": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.email", "label": "Email address", "required": "conditional", "condition": "at least one contact channel", "validators": ["email"], "on_missing": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "patient.parent_guardian", "label": "Parent/guardian (if applicable)", "required": "conditional", "condition": "patient.dob indicates age < 18", "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "patient.alternate_contact", "label": "Alternate caregiver/contact", "required": "optional", "severity": "nonblocking"},
+        {"id": "patient.primary_language", "label": "Patient's primary language", "required": "always", "validators": ["one_of:English,Other"], "on_missing": "D1_AUTO_REPAIR", "severity": "nonblocking"},
+        {"id": "insurance.medical_plan", "label": "Medical insurance plan", "required": "always", "validators": ["nonempty"], "on_missing": "D1_AUTO_REPAIR", "severity": "blocking", "recover_from": ["insurance_card_front"]},
+        {"id": "insurance.member_id", "label": "Member ID", "required": "always", "validators": ["nonempty", "member_id_charset", "eligibility_270_271"], "on_missing": "D1_AUTO_REPAIR", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking", "recover_from": ["insurance_card_front"], "note": "O/0, I/1, S/5 substitutions are the dominant transcription error"},
+        {"id": "insurance.group_number", "label": "Group #", "required": "always", "validators": ["nonempty"], "on_missing": "D1_AUTO_REPAIR", "severity": "blocking", "recover_from": ["insurance_card_front"]},
+        {"id": "insurance.rx_plan", "label": "Prescription plan", "required": "always", "validators": ["nonempty"], "on_missing": "D1_AUTO_REPAIR", "severity": "blocking", "recover_from": ["insurance_card_back"]},
+        {"id": "insurance.rx_bin", "label": "Rx BIN", "required": "always", "validators": ["digits:6", "known_bin"], "on_missing": "D1_AUTO_REPAIR", "on_invalid": "D3_PRESCRIBER_CALLBACK", "severity": "blocking", "recover_from": ["insurance_card_back"]},
+        {"id": "insurance.rx_pcn", "label": "Rx PCN", "required": "conditional", "condition": "plan requires PCN for routing (most commercial plans)", "validators": ["bin_pcn_pair"], "on_missing": "D1_AUTO_REPAIR", "severity": "blocking", "recover_from": ["insurance_card_back"]},
+        {"id": "insurance.policy_holder", "label": "Policy holder", "required": "conditional", "condition": "policy holder is not the patient", "severity": "nonblocking"}
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Prescriber Information",
+      "fields": [
+        {"id": "prescriber.form_date", "label": "Date", "required": "always", "validators": ["date_iso", "not_future"], "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "prescriber.form_time", "label": "Time", "required": "optional", "severity": "nonblocking"},
+        {"id": "prescriber.date_needed", "label": "Date medication needed", "required": "always", "validators": ["date_iso", "on_or_after:prescriber.form_date"], "on_missing": "D1_AUTO_REPAIR", "severity": "nonblocking"},
+        {"id": "prescriber.org_name", "label": "Office/clinic/institution name", "required": "always", "validators": ["nonempty"], "on_missing": "D1_AUTO_REPAIR", "severity": "nonblocking"},
+        {"id": "prescriber.first_name", "label": "Prescriber's first name", "required": "always", "validators": ["nonempty"], "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "prescriber.last_name", "label": "Last name", "required": "always", "validators": ["nonempty"], "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "prescriber.title", "label": "Prescriber's title", "required": "always", "validators": ["one_of:MD,DO,NP,PA,Other"], "on_missing": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "prescriber.supervising_md", "label": "If NP or PA, under direction of Dr.", "required": "conditional", "condition": "prescriber.title in [NP, PA]", "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "prescriber.office_phone", "label": "Office phone", "required": "always", "validators": ["phone_nanp"], "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "prescriber.office_fax", "label": "Fax", "required": "always", "validators": ["phone_nanp"], "on_missing": "D1_AUTO_REPAIR", "severity": "blocking", "recover_from": ["fax_header", "letterhead"]},
+        {"id": "prescriber.npi", "label": "NPI #", "required": "always", "validators": ["npi_luhn", "npi_prefix"], "on_missing": "D3_PRESCRIBER_CALLBACK", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking", "note": "checksum failure is deterministic, not a confidence problem"},
+        {"id": "prescriber.license", "label": "License #", "required": "always", "validators": ["nonempty", "state_license_format"], "on_missing": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "prescriber.office_contact", "label": "Office contact and title", "required": "always", "validators": ["nonempty"], "on_missing": "D1_AUTO_REPAIR", "severity": "nonblocking"},
+        {"id": "prescriber.office_email", "label": "Office contact email", "required": "conditional", "condition": "emails used for status updates", "validators": ["email"], "severity": "nonblocking"},
+        {"id": "prescriber.office_address", "label": "Office street address", "required": "always", "validators": ["nonempty"], "on_missing": "D1_AUTO_REPAIR", "severity": "nonblocking", "recover_from": ["letterhead"]},
+        {"id": "prescriber.deliver_to", "label": "Deliver product to", "required": "always", "validators": ["one_of:Patient's home,Prescriber's office,Clinic/infusion site"], "on_missing": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "prescriber.infusion_site", "label": "Infusion site block", "required": "conditional", "condition": "prescriber.deliver_to == Clinic/infusion site", "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"}
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Clinical Information",
+      "fields": [
+        {"id": "clinical.icd10_primary", "label": "Primary ICD-10 code (REQUIRED)", "required": "always", "validators": ["icd10_syntax", "icd10_exists", "icd10_matches_drug"], "on_missing": "D3_PRESCRIBER_CALLBACK", "on_invalid": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "clinical.weight_kg", "label": "Weight (kg)", "required": "conditional", "condition": "pediatric patient OR weight-based dosing (oncology, growth hormone)", "validators": ["numeric", "range:0.5,400"], "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "clinical.height_cm", "label": "Height (cm)", "required": "conditional", "condition": "growth hormone or BSA-based dosing", "validators": ["numeric", "range:30,250"], "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "clinical.measure_date", "label": "Date measured", "required": "conditional", "condition": "weight or height present", "validators": ["date_iso", "within_days:90"], "severity": "nonblocking"},
+        {"id": "clinical.allergies", "label": "NKDA / Known drug allergies", "required": "always", "validators": ["exactly_one_of:NKDA,list"], "on_missing": "D2_HUMAN_REVIEW", "severity": "blocking", "note": "blank is not the same as NKDA; blank must never be read as NKDA"},
+        {"id": "clinical.concurrent_meds", "label": "Concurrent meds", "required": "always", "validators": ["nonempty_or_none"], "on_missing": "D2_HUMAN_REVIEW", "severity": "nonblocking"}
+      ]
+    },
+    {
+      "id": "4",
+      "title": "Prescribing Information",
+      "fields": [
+        {"id": "rx.medication", "label": "Medication", "required": "always", "validators": ["nonempty", "formulary_lexicon"], "on_missing": "D4_REJECT_REFAX", "on_invalid": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "rx.strength", "label": "Strength/Formulation", "required": "always", "validators": ["nonempty", "strength_in_product_set"], "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "rx.directions", "label": "Directions", "required": "always", "validators": ["nonempty"], "on_missing": "D3_PRESCRIBER_CALLBACK", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "rx.quantity", "label": "Quantity", "required": "always", "validators": ["numeric", "qty_days_math"], "on_missing": "D3_PRESCRIBER_CALLBACK", "on_invalid": "D2_HUMAN_REVIEW", "severity": "blocking"},
+        {"id": "rx.refills", "label": "Refills", "required": "always", "validators": ["digits:1-2"], "on_missing": "D1_AUTO_REPAIR", "severity": "nonblocking"},
+        {"id": "rx.dispense_duration", "label": "Dispense", "required": "always", "validators": ["one_of:1-month,3-month,Other"], "on_missing": "D1_AUTO_REPAIR", "severity": "blocking"},
+        {"id": "rx.ancillary_supplies", "label": "Ancillary supplies authorized", "required": "optional", "severity": "nonblocking"},
+        {"id": "rx.signature", "label": "Prescriber's signature", "required": "always", "validators": ["signature_present", "not_stamp", "signer_matches_prescriber"], "on_missing": "D3_PRESCRIBER_CALLBACK", "on_invalid": "D3_PRESCRIBER_CALLBACK", "severity": "blocking", "note": "form states NO STAMPS; stamped signature is not a signature"},
+        {"id": "rx.signature_date", "label": "Date signed", "required": "always", "validators": ["date_iso", "not_future", "within_days:30"], "on_missing": "D3_PRESCRIBER_CALLBACK", "severity": "blocking"},
+        {"id": "rx.substitution", "label": "Dispense as written / Substitution allowed", "required": "always", "validators": ["exactly_one_of:DAW,substitution_allowed"], "on_missing": "D2_HUMAN_REVIEW", "severity": "blocking", "note": "ambiguous substitution status is a dispensing-safety issue, not an admin one"}
+      ]
+    }
+  ],
+  "cross_field_rules": [
+    {"id": "X1", "rule": "signature_date >= form_date", "on_fail": "D2_HUMAN_REVIEW"},
+    {"id": "X2", "rule": "patient.dob age >= 18 implies parent_guardian may be blank", "on_fail": "none"},
+    {"id": "X3", "rule": "condition in clinical.icd10_primary must appear in the drug's approved-indication map", "on_fail": "D3_PRESCRIBER_CALLBACK"},
+    {"id": "X4", "rule": "if prescriber.title in [NP,PA] then supervising_md required", "on_fail": "D3_PRESCRIBER_CALLBACK"},
+    {"id": "X5", "rule": "rx.medication in formulary must match the therapy-specific form used, else route not reject", "on_fail": "auto_route"},
+    {"id": "X6", "rule": "duplicate: same patient + drug + prescriber within 72h implies suppress", "on_fail": "suppress"}
+  ]
+}
