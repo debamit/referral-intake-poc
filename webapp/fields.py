@@ -130,16 +130,20 @@ def value_box(im, word, end_frac, sens=28, pad_top=0.25, pad_bot=0.25):
     h = max(6.0, y1 - y0)
 
     if end_frac > 0.92:
-        # Label occupies its own box. Back off slightly rather than starting
-        # after it: on this form the value begins before the label box ends, so
-        # x1 + margin clips the first glyph. Trim-to-ink drops any label ink.
+        # Label has its own box: scan generously to the right, then stop at the
+        # first gap wider than a glyph — that gap is the next field.
         left = int(x1 - 0.25 * h)
         right = min(W, int(left + 10 * h))
+        stop_at_gap = True
     else:
-        # label and value share a box — split inside the line at a real gap
+        # Label and value share one box, so the box already ends at the value
+        # and there is nothing to cut. Do NOT gap-cut here: a pen lift inside
+        # handwriting routinely exceeds a glyph height, and cutting on it
+        # truncates the code to a sliver.
         split = x0 + (x1 - x0) * end_frac
         left = int(_snap_gap(im, word, split, sens))
-        right = min(W, int(x1) + int(0.2 * h))
+        right = min(W, int(x1) + int(0.8 * h))
+        stop_at_gap = False
 
     top = max(0, int(y0 - pad_top * h))
     bot = min(H, int(y1 + pad_bot * h))
@@ -147,7 +151,9 @@ def value_box(im, word, end_frac, sens=28, pad_top=0.25, pad_bot=0.25):
         return None
 
     strip = strip_rules(binarise(im.crop((left, top, right, bot)), sens))
-    bb = _cut_at_field_gap(strip, strip.getbbox(), h)
+    bb = strip.getbbox()
+    if stop_at_gap:
+        bb = _cut_at_field_gap(strip, bb, h)
     if not bb:
         return None
     return (left + bb[0], top + bb[1], left + bb[2], top + bb[3])
