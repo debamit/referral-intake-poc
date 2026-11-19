@@ -80,7 +80,10 @@ def read(image, max_side=None):
         s = max_side / float(max(W, H))
         src = im.resize((max(1, round(W * s)), max(1, round(H * s))), Image.LANCZOS)
     sw, sh = src.size
-    res = engine()(src)
+    # Pass all three flags explicitly. RapidOCR's engine keeps the flags from
+    # the previous call on the instance, so a read_crop() (detection off) would
+    # otherwise leave the next read() returning a rec-only object.
+    res = engine()(src, use_det=True, use_cls=True, use_rec=True)
     words = []
     # A page with no detected text yields None (txts/scores) or an empty array
     # (boxes). Never test truthiness — boxes is a numpy array.
@@ -99,6 +102,29 @@ def read(image, max_side=None):
         })
     words.sort(key=lambda w: (round(w["box"][1] / 12), w["box"][0]))
     return words
+
+
+def read_crop(image):
+    """Recognise a single already-cropped field (detection skipped).
+
+    Returns (text, score). This is a raw read of pixels: evidence about
+    legibility, never proof of correctness. Only the diagnosis field has gates
+    that can turn a reading into a decision.
+    """
+    res = engine()(image, use_det=False, use_cls=False, use_rec=True)
+    txts = getattr(res, "txts", None)
+    scores = getattr(res, "scores", None)
+    if txts is None:
+        try:
+            txts, scores = [res[0]], [res[1]]
+        except Exception:
+            return "", 0.0
+    txts = list(txts or [])
+    scores = list(scores or [])
+    if not txts:
+        return "", 0.0
+    text = " ".join(t.strip() for t in txts).strip()
+    return text, float(scores[0]) if scores else 0.0
 
 
 def group_lines(words, overlap=0.5):

@@ -267,7 +267,7 @@ def box_right_of_label(im, label_word, sens=28, pad_frac=0.15):
 
 
 def decode(image_bytes_or_path, box=None, drug="adalimumab", sens=28, table_path=None,
-           ocr=False):
+           ocr=False, box_source_hint="template"):
     table = load_table(table_path)
     src = (Image.open(io.BytesIO(image_bytes_or_path))
            if isinstance(image_bytes_or_path, (bytes, bytearray))
@@ -275,7 +275,7 @@ def decode(image_bytes_or_path, box=None, drug="adalimumab", sens=28, table_path
     im = src.convert("RGB")
     W, H = im.size
 
-    ocr_q, ocr_fp, mask_report, box_source = None, None, [], "template"
+    ocr_q, ocr_fp, mask_report, box_source = None, None, [], box_source_hint
     masked_preview = None
     stages = []
 

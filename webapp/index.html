@@ -37,36 +37,50 @@
          background:var(--accent);color:#fff;font-weight:600;font-size:13.5px}
   button:disabled{opacity:.45;cursor:default}
 
+  /* ---- output: one collapsible row per field ---- */
+  details.field{background:#11161d;border:1px solid var(--line);border-radius:9px;margin-bottom:9px}
+  details.field>summary{display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:12px;
+                        align-items:center;padding:9px 11px;cursor:pointer;list-style:none}
+  details.field>summary::-webkit-details-marker{display:none}
+  details.field[open]>summary{border-bottom:1px solid var(--line)}
+  .fthumb{width:104px;height:52px;object-fit:contain;background:#0b0e13;
+          border:1px solid var(--line);border-radius:5px;padding:2px}
+  .fthumb.empty{display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--mute)}
+  .flabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+  .fout{font:600 14px/1.35 ui-monospace,monospace;margin-top:2px;word-break:break-word}
+  .ftrace{padding:11px}
+  .ftrace h3{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);
+             margin:14px 0 6px;font-weight:600}
+  .ftrace h3:first-child{margin-top:0}
+
   .stages{display:flex;flex-direction:column;gap:0}
-  .stage{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  .stage{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px}
   .stage:last-child{border-bottom:0}
   .dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:0 0 auto;background:var(--mute)}
   .dot.pass{background:var(--ok)} .dot.fail{background:var(--bad)} .dot.warn,.dot.skip{background:var(--warn)}
   .sname{font:600 10.5px/1.7 ui-monospace,monospace;letter-spacing:.06em;color:var(--mute);
-         min-width:104px;text-transform:uppercase}
-  .sdet{color:var(--ink);opacity:.9}
-  .verdict{display:flex;align-items:center;gap:14px;margin:4px 0 14px;flex-wrap:wrap}
-  .badge{font:700 12px/1 ui-monospace,monospace;letter-spacing:.08em;padding:8px 12px;border-radius:7px;
-         text-transform:uppercase}
+         min-width:96px;text-transform:uppercase}
+  .sdet{color:var(--ink);opacity:.9;word-break:break-word}
+  .badge{font:700 11px/1 ui-monospace,monospace;letter-spacing:.08em;padding:6px 9px;border-radius:6px;
+         text-transform:uppercase;white-space:nowrap}
   .badge.accept{background:rgba(46,204,113,.14);color:var(--ok);border:1px solid rgba(46,204,113,.35)}
+  .badge.read{background:rgba(79,140,255,.14);color:var(--accent);border:1px solid rgba(79,140,255,.35)}
   .badge.review{background:rgba(232,177,58,.14);color:var(--warn);border:1px solid rgba(232,177,58,.35)}
   .badge.callback{background:rgba(224,85,85,.14);color:var(--bad);border:1px solid rgba(224,85,85,.35)}
-  .reason{font:12px ui-monospace,monospace;color:var(--mute)}
-  .reading{font:700 26px/1 ui-monospace,monospace;letter-spacing:.02em}
-  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
   th{text-align:left;color:var(--mute);font-weight:600;font-size:10.5px;letter-spacing:.06em;
      text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line)}
   td{padding:6px 8px;border-bottom:1px solid rgba(37,44,54,.55);font-family:ui-monospace,monospace}
   tr.surv td{background:rgba(46,204,113,.07)}
   tr.wrong td{color:var(--mute)}
   .yes{color:var(--ok)} .no{color:var(--mute)}
-  .imgs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .imgs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
   .imgs figure{margin:0}
   .imgs img{width:100%;border-radius:6px;border:1px solid var(--line)}
   .imgs figcaption{font-size:10.5px;color:var(--mute);margin-top:4px}
   .maskedimg{width:100%;border-radius:7px;border:1px solid var(--line);display:block}
   pre{background:#0b0e13;border:1px solid var(--line);border-radius:8px;padding:10px;
-      font-size:11px;overflow:auto;max-height:220px;color:#b9c2cf;margin:8px 0 0}
+      font-size:11px;overflow:auto;max-height:200px;color:#b9c2cf;margin:6px 0 0}
   .muted{color:var(--mute)} .mono{font-family:ui-monospace,monospace}
   a{color:var(--accent);text-decoration:none}
 </style>
@@ -74,9 +88,9 @@
 <body>
 <div class="wrap">
   <h1>Referral field decode — proof of concept</h1>
-  <p class="sub">Diagnosis code only. The field is located by its printed label; the page is
-     de-identified before anything reads it. Hard gates decide what is possible, scores only rank
-     what survives. <a href="/lexicographic.html">How the ordering works →</a></p>
+  <p class="sub">Fields are located by their printed labels; the page is de-identified before
+     anything reads it. Only the diagnosis is a gated decode — the rest are reads, and are
+     labelled as such. <a href="/lexicographic.html">How the ordering works →</a></p>
 
   <div class="grid">
     <details class="panel" open>
@@ -86,7 +100,7 @@
       <canvas id="preview"></canvas>
       <button id="run" disabled>Run workflow</button>
       <p class="muted" style="font-size:11px;margin:10px 0 0">
-        No coordinates to set — the crop comes from the “Diagnosis” label on the page.</p>
+        No coordinates to set — crops come from the printed labels.</p>
       <p class="muted" style="font-size:11.5px;margin:10px 0 0">
         Need a sample? <a href="/sample/unmasked.jpg">download the unmasked form</a>
         or <a href="/sample/masked.png">the already-masked version</a>.</p>
@@ -100,15 +114,18 @@
     </details>
 
     <details class="panel" open>
-      <summary><h2>3 · Trace</h2></summary>
-      <div id="stages" class="stages"><div class="muted" style="font-size:12.5px">No run yet.</div></div>
-      <div id="result"></div>
+      <summary><h2>3 · Output</h2></summary>
+      <div id="output">
+        <p class="muted" style="font-size:12.5px;margin:0">No run yet.</p>
+      </div>
     </details>
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let dataURL = null;
 
 $('drop').onclick = () => $('file').click();
@@ -139,79 +156,107 @@ function draw(){
 $('run').onclick = async () => {
   $('run').disabled = true; $('run').textContent = 'Running…';
   try {
-    const res = await fetch('/api/decode', {
+    const res = await fetch('/api/fields', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ image_b64: dataURL, box: null, ocr: true })
+      body: JSON.stringify({ image_b64: dataURL })
     });
     const j = await res.json();
     if (j.error) throw new Error(j.error);
     render(j);
   } catch (e) {
-    $('result').innerHTML = `<p class="badge callback">ERROR</p><pre>${e.message}</pre>`;
+    $('output').innerHTML = `<p class="badge callback">ERROR</p><pre>${esc(e.message)}</pre>`;
   } finally {
     $('run').disabled = false; $('run').textContent = 'Run workflow';
   }
 };
 
+const BADGE = { accept:'accept', read:'read', review:'review', callback:'callback',
+                not_found:'callback' };
+
+function stageList(stages){
+  return `<div class="stages">${(stages||[]).map(s => `
+    <div class="stage"><span class="dot ${esc(s.state)}"></span>
+      <span class="sname">${esc(s.id)} ${esc(s.name)}</span>
+      <span class="sdet">${esc(s.detail)}</span></div>`).join('')}</div>`;
+}
+
+function readingsTable(f){
+  if (!f.readings || !f.readings.length) return '';
+  return `<h3>Readings</h3>
+    <table>
+      <thead><tr><th>code</th><th>shape</th><th>syntax</th><th>exists</th><th>in A</th><th>condition</th></tr></thead>
+      <tbody>${f.readings.map(x => `
+        <tr class="${x.syntax&&x.exists&&x.in_set?'surv':(x.syntax&&x.exists?'wrong':'')}">
+          <td>${esc(x.code)}</td><td>${x.shape.toFixed(2)}</td>
+          <td class="${x.syntax?'yes':'no'}">${x.syntax?'✓':'·'}</td>
+          <td class="${x.exists?'yes':'no'}">${x.exists?'✓':'·'}</td>
+          <td class="${x.in_set?'yes':'no'}">${x.in_set?'✓':'·'}</td>
+          <td style="font-family:inherit;color:var(--mute)">${esc(x.condition||'')}</td>
+        </tr>`).join('')}</tbody>
+    </table>
+    <p class="muted" style="font-size:11px;margin:6px 0 0">
+      ${f.reading_count} distinct readings; showing top ${f.readings.length}.
+      Highlighted rows passed every hard gate.</p>`;
+}
+
+function cropImages(f){
+  if (!f.images) return '';
+  return `<h3>Segmentation</h3>
+    <div class="imgs">
+      <figure><img src="data:image/png;base64,${f.images.annotated}"><figcaption>crop with chosen segmentation</figcaption></figure>
+      <figure><img src="data:image/png;base64,${f.images.mask}"><figcaption>binarised, underline removed</figcaption></figure>
+    </div>`;
+}
+
+function fieldRow(f){
+  const cls = BADGE[f.state] || 'callback';
+  const out = f.output ? esc(f.output) : '—';
+  const thumb = f.crop
+    ? `<img class="fthumb" src="data:image/png;base64,${f.crop}" alt="">`
+    : `<div class="fthumb empty">no crop</div>`;
+  const meta = f.confidence != null
+    ? `conf <span class="mono">${f.confidence.toFixed(3)}</span> · ${esc(f.reason||'')}`
+    : esc(f.reason || '');
+  return `<details class="field">
+    <summary>
+      ${thumb}
+      <div>
+        <div class="flabel">${esc(f.label)}</div>
+        <div class="fout">${out}</div>
+        <div class="muted" style="font-size:11px;margin-top:2px">${meta}</div>
+      </div>
+      <span class="badge ${cls}">${esc(f.state)}</span>
+    </summary>
+    <div class="ftrace">
+      <h3>Trace</h3>
+      ${stageList(f.stages)}
+      ${readingsTable(f)}
+      ${cropImages(f)}
+      ${f.audit ? `<h3>Audit record</h3><pre>${esc(JSON.stringify(f.audit, null, 2))}</pre>` : ''}
+    </div>
+  </details>`;
+}
+
 function render(j){
   const o = j.ocr || {};
-
-  $('stages').innerHTML = j.stages.map(s => `
-    <div class="stage"><span class="dot ${s.state}"></span>
-      <span class="sname">${s.id} ${s.name}</span>
-      <span class="sdet">${s.detail}</span></div>`).join('');
 
   $('maskedbody').innerHTML = j.images && j.images.masked_page
     ? `<img class="maskedimg" src="data:image/png;base64,${j.images.masked_page}">
        <p class="muted" style="font-size:11.5px;margin:8px 0 0">
          <b class="mono">${o.masked_regions}</b> line(s) blanked
-         ${o.labels_hit ? '— ' + o.labels_hit.join(', ') : ''}<br>
+         ${o.labels_hit ? '— ' + esc(o.labels_hit.join(', ')) : ''}<br>
          Original discarded; every later stage saw only this image.</p>`
     : `<p class="muted" style="font-size:12.5px;margin:0">No masked page returned.</p>`;
 
-  const r = j.chosen;
-  $('result').innerHTML = `
-    <div class="verdict" style="margin-top:16px">
-      <span class="badge ${j.disposition}">${j.disposition}</span>
-      <span class="reading">${r ? r.code : '—'}</span>
-      <span class="reason">${j.reason}</span>
+  const q = o.quality || {};
+  const fp = o.fingerprint || {};
+  $('output').innerHTML = `
+    <div class="muted" style="font-size:11.5px;margin:0 0 12px">
+      quality <b class="mono">${esc(q.verdict||'?')}</b> (median ${esc(q.median)}) ·
+      form <b class="mono">${esc(fp.form_id||'?')}</b> ·
+      ${j.fields.length} field(s) located
     </div>
-    <div class="muted" style="font-size:12px">
-      quality <b class="mono">${o.quality ? o.quality.verdict : '?'}</b>
-      (median ${o.quality ? o.quality.median : '?'}) ·
-      form <b class="mono">${o.fingerprint ? o.fingerprint.form_id : '?'}</b> ·
-      crop from <b class="mono">${o.box_source}</b> ·
-      margin <b class="mono">${j.margin.toFixed(2)}</b> ·
-      A = <span class="mono">${j.candidates.count}</span> codes
-    </div>
-
-    <h2 style="margin-top:18px">Readings</h2>
-    <table>
-      <thead><tr><th>code</th><th>shape</th><th>syntax</th><th>exists</th><th>in A</th><th>condition</th></tr></thead>
-      <tbody>${j.readings.map(x => `
-        <tr class="${x.syntax&&x.exists&&x.in_set?'surv':(x.syntax&&x.exists?'wrong':'')}">
-          <td>${x.code}</td><td>${x.shape.toFixed(2)}</td>
-          <td class="${x.syntax?'yes':'no'}">${x.syntax?'✓':'·'}</td>
-          <td class="${x.exists?'yes':'no'}">${x.exists?'✓':'·'}</td>
-          <td class="${x.in_set?'yes':'no'}">${x.in_set?'✓':'·'}</td>
-          <td style="font-family:inherit;color:var(--mute)">${x.condition||''}</td>
-        </tr>`).join('')}</tbody>
-    </table>
-    <p class="muted" style="font-size:11px">
-      ${j.reading_count} distinct readings generated; showing top ${j.readings.length}.
-      Highlighted rows passed every hard gate.</p>
-
-    <div class="imgs">
-      <figure><img src="data:image/png;base64,${j.images.annotated}"><figcaption>crop with chosen segmentation</figcaption></figure>
-      <figure><img src="data:image/png;base64,${j.images.mask}"><figcaption>binarised, underline removed</figcaption></figure>
-    </div>
-
-    <h2 style="margin-top:18px">Audit record</h2>
-    <pre>${JSON.stringify(j.audit, null, 2)}</pre>
-    <details style="margin-top:10px"><summary class="muted" style="font-size:12px;cursor:pointer">
-      candidate set (${j.candidates.count} codes for ${j.candidates.drug})</summary>
-      <pre>${j.candidates.codes.join('  ')}</pre>
-    </details>`;
+    ${j.fields.map(fieldRow).join('')}`;
 }
 </script>
 </body>

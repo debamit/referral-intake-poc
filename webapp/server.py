@@ -11,6 +11,7 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import decode_lib
+import fields
 
 STATIC = {"": "index.html", "/": "index.html",
           "/index.html": "index.html",
@@ -73,7 +74,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self._authed():
             return self._send(401, {"error": "unauthorized"})
-        if self.path != "/api/decode":
+        if self.path not in ("/api/decode", "/api/fields"):
             return self._send(404, {"error": "not found"})
         try:
             n = int(self.headers.get("Content-Length", 0))
@@ -82,6 +83,8 @@ class Handler(BaseHTTPRequestHandler):
             if "," in data:
                 data = data.split(",", 1)[1]
             raw = base64.b64decode(data)
+            if self.path == "/api/fields":
+                return self._send(200, fields.analyze(raw))
             box = payload.get("box")
             out = decode_lib.decode(raw, box=box,
                                     drug=payload.get("drug", "adalimumab"),
