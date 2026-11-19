@@ -1,6 +1,6 @@
 {
   "name": "legacy_supply_request_v1",
-  "description": "Single-page legacy Accredo 'Prescription and Supply Request Form' (RA variant), photographed off a screen with perspective skew. Boxes derived from an ink-profile pass (flat-field corrected, ruling lines removed), then widened to absorb skew. Fractions of the page, so resolution-independent.",
+  "description": "Single-page legacy specialty pharmacy 'Prescription and Supply Request Form' (RA variant), photographed off a screen with perspective skew. Boxes derived from an ink-profile pass (flat-field corrected, ruling lines removed), then widened to absorb skew. Fractions of the page, so resolution-independent.",
   "pages": 1,
   "fill": [58, 58, 58],
   "box_model": "fractional [x0,y0,x1,y1], origin top-left",

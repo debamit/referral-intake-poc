@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate SPECIMEN synthetic Accredo-style referral forms.
+"""Generate SPECIMEN synthetic specialty-pharmacy referral forms.
 
 No third-party deps: writes PDF content streams directly.
 All patient identifiers are fictional (555-01xx numbers, example.com,
@@ -95,7 +95,7 @@ def header(c, fax_stamp):
     c.text(LEFT + 4, 754.4, "SPECIMEN  -  SYNTHETIC TEST DATA  -  NOT A REAL PATIENT RECORD  -  DO NOT SUBMIT", F6, 6.9, 0.25)
     c.text(LEFT, 735, "Please fax ALL pages of completed form to your team at 888.302.1028.", F2, 8.6, 0.05)
     c.text(LEFT, 724.5, "To reach your team, call toll-free 844.516.3319.", F1, 8.0, 0.15)
-    c.text(LEFT, 706, "Accredo" + REG + " Specialty Pharmacy Prescription & Enrollment Form", F2, 13.2, 0.02)
+    c.text(LEFT, 706, "Specialty Pharmacy Prescription & Enrollment Form", F2, 13.2, 0.02)
     c.text(LEFT, 694.5, "Four simple steps to submit your referral.", F5, 8.3, 0.30)
     c.line(LEFT, 688, RIGHT, 688, 1.0, 0.30)
     return 676
@@ -104,7 +104,7 @@ def header(c, fax_stamp):
 def footer(c, page, fax_stamp):
     c.line(LEFT, 74, RIGHT, 74, 0.5, 0.65)
     c.text(LEFT, 63, "SPECIMEN ONLY - synthetic identifiers (555-01xx phones, example.com, SSN 0000).", F5, 6.4, 0.40)
-    c.text(LEFT, 54, "Not a valid prescription. Generated as a layout/OCR test fixture, not an official Accredo document.", F5, 6.4, 0.40)
+    c.text(LEFT, 54, "Not a valid prescription. Generated as a layout/OCR test fixture, not an official form.", F5, 6.4, 0.40)
     c.text(RIGHT - 62, 63, f"Page {page} of 2", F3, 7.2, 0.35)
     c.text(RIGHT - 96, 54, "Fax: 888.302.1028", F3, 7.2, 0.35)
 
@@ -140,7 +140,7 @@ def page1(fax_stamp):
     y -= 22
     y = row(c, y, [("Medical insurance plan", "BlueCross BlueShield IL PPO", 190),
                    ("Member ID", "XQZ0000000001", 170), ("Group #", "00001234", 140)])
-    y = row(c, y, [("Prescription plan", "Express Scripts", 190), ("Rx BIN", "610014", 110),
+    y = row(c, y, [("Prescription plan", "Specialty PBM", 190), ("Rx BIN", "610014", 110),
                    ("Rx PCN", "IRONWOOD", 110), ("Policy holder", "Jane Q. ZZTEST", 100)])
 
     y -= 6
@@ -181,7 +181,7 @@ def page2(fax_stamp):
         fax_stamp_line(c, "P.02/02")
     c.rect(LEFT, 748, CW, 13, fill=0.90)
     c.text(LEFT + 4, 752.4, "SPECIMEN  -  SYNTHETIC TEST DATA  -  NOT A REAL PATIENT RECORD  -  DO NOT SUBMIT", F6, 6.9, 0.25)
-    c.text(LEFT, 733, "Accredo" + REG + " Specialty Pharmacy Prescription & Enrollment Form", F2, 9.6, 0.05)
+    c.text(LEFT, 733, "Specialty Pharmacy Prescription & Enrollment Form", F2, 9.6, 0.05)
     c.text(LEFT, 724, "Fax completed form to 888.302.1028.", F2, 8.2, 0.10)
     c.line(LEFT, 718, RIGHT, 718, 1.0, 0.30)
 

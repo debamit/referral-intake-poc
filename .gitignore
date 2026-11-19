@@ -13,3 +13,7 @@ __pycache__/
 redact/out/
 out/
 scratch/
+
+# third-party forms and rendered scans — never publish
+*.pdf
+*.png

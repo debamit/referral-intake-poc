@@ -18,8 +18,8 @@ STATIC = {"": "index.html", "/": "index.html",
           "/lexicographic.html": "lexicographic.html"}
 
 # Explicit download allow-list. Never derive these from the request path.
-SAMPLES = {"/sample/unmasked.jpg": "samples/accredo-legacy-unmasked.jpg",
-           "/sample/masked.png": "samples/accredo-legacy-masked.png"}
+SAMPLES = {"/sample/unmasked.jpg": "samples/form-unmasked.jpg",
+           "/sample/masked.png": "samples/form-masked.png"}
 TOKEN = None
 
 

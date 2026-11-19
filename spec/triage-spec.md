@@ -1,7 +1,7 @@
 # Fax Referral Triage Spec — v0.1
 
 **Scope:** inbound *new referral* faxes to a specialty pharmacy intake queue, one form family
-(the Accredo Prescription & Enrollment Form, 2 pages, four sections).
+(the specialty pharmacy Prescription & Enrollment Form, 2 pages, four sections).
 **Out of scope:** prior-authorization adjudication, benefit investigation, clinical criteria for
 therapy approval, renewal/refill faxes (different form, different failure modes).
 
@@ -133,5 +133,5 @@ the model's own confidence.
 
 ## 7. PHI boundary
 
-Development and measurement run on synthetic fixtures (`accredo-sample-filled*.pdf`).
+Development and measurement run on synthetic fixtures (`sample-filled*.pdf`).
 Real faxes stay inside the sanitized path; no real member data in test corpora, logs, or prompts.

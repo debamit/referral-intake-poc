@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1",
-  "form_family": "accredo-prescription-enrollment",
+  "form_family": "specialty-pharmacy-enrollment",
   "pages_expected": 2,
   "page_markers": ["1 of 2", "2 of 2"],
   "dispositions": ["D0_AUTO_CLEAR", "D1_AUTO_REPAIR", "D2_HUMAN_REVIEW", "D3_PRESCRIBER_CALLBACK", "D4_REJECT_REFAX"],
